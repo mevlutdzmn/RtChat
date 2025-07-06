@@ -1,0 +1,6 @@
+@RealTimeChat.API_HostAddress = http://localhost:5095
+
+GET {{RealTimeChat.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
