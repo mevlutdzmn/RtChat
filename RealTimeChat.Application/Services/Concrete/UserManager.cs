@@ -1,5 +1,7 @@
 ﻿using RealTimeChat.Application.DTOs;
 using RealTimeChat.Application.Services.Abstract;
+using RealTimeChat.Domain.Entities;
+using RealTimeChat.Infrastructure.Repositories.Abstract;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,31 +10,62 @@ using System.Threading.Tasks;
 
 namespace RealTimeChat.Application.Services.Concrete
 {
-    // IUserService'i gerçekleyen sınıf
+    // Kullanıcı servisi: Repository üzerinden veriyle konuşur
     public class UserManager : IUserService
     {
-        // Mock kullanıcı listesi (gerçek veri kaynağı yok henüz)
-        private readonly List<UserDto> _users = new();
+        private readonly IUserRepository _userRepository;
 
-        // Tüm kullanıcıları getirir
+        // Dependency Injection ile repository alınır
+        public UserManager(IUserRepository userRepository)
+        {
+            _userRepository = userRepository;
+        }
+
         public async Task<List<UserDto>> GetAllAsync()
         {
-            return await Task.FromResult(_users);
+            var users = await _userRepository.GetAllAsync();
+
+            // Entity → DTO dönüşümü
+            return users.Select(u => new UserDto
+            {
+                Id = u.Id,
+                Username = u.Username,
+                Email = u.Email
+            }).ToList();
         }
 
-        // Belirli bir Id’ye sahip kullanıcıyı getirir (yoksa null döner)
         public async Task<UserDto?> GetByIdAsync(Guid id)
         {
-            var user = _users.FirstOrDefault(u => u.Id == id);
-            return await Task.FromResult(user);
+            var user = await _userRepository.GetByIdAsync(id);
+            if (user == null) return null;
+
+            return new UserDto
+            {
+                Id = user.Id,
+                Username = user.Username,
+                Email = user.Email
+            };
         }
 
-        // Yeni kullanıcı oluşturur ve listeye ekler
         public async Task<UserDto> CreateAsync(UserDto userDto)
         {
-            userDto.Id = Guid.NewGuid(); // Yeni ID ata
-            _users.Add(userDto); // Listeye ekle
-            return await Task.FromResult(userDto);
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = userDto.Username,
+                Email = userDto.Email,
+                PasswordHash = "dummy", // Gerçek hash ileride
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var created = await _userRepository.AddAsync(user);
+
+            return new UserDto
+            {
+                Id = created.Id,
+                Username = created.Username,
+                Email = created.Email
+            };
         }
     }
 }

@@ -15,7 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\RealTimeChat.Application\RealTimeChat.Application.csproj" />
     <ProjectReference Include="..\RealTimeChat.Domain\RealTimeChat.Domain.csproj" />
     <ProjectReference Include="..\RealTimeChat.Shared\RealTimeChat.Shared.csproj" />
   </ItemGroup>

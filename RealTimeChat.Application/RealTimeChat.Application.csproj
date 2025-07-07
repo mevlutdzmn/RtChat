@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\RealTimeChat.Domain\RealTimeChat.Domain.csproj" />
     <ProjectReference Include="..\RealTimeChat.Shared\RealTimeChat.Shared.csproj" />
+	<ProjectReference Include="..\RealTimeChat.Infrastructure\RealTimeChat.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
