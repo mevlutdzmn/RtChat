@@ -1,16 +1,15 @@
-﻿// Gerekli namespace'ler:
+﻿
 using Microsoft.EntityFrameworkCore;  // EF Core fonksiyonları (Include, ToListAsync vs.)
 using RealTimeChat.Domain.Entities;   // Message ve User gibi entity sınıfları için
+using RealTimeChat.Domain.Repositories;
 using RealTimeChat.Infrastructure.Context;  // DbContext sınıfı (veritabanı bağlantısı)
-using RealTimeChat.Infrastructure.Repositories.Abstract;  // IMessageRepository arayüzü
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RealTimeChat.Infrastructure.Repositories.Concrete
+namespace RealTimeChat.Infrastructure.Repositories
 {
     // Entity Framework kullanarak mesaj verilerini yöneten repository sınıfı
     public class EfMessageRepository : IMessageRepository

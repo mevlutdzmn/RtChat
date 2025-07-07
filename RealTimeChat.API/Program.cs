@@ -1,21 +1,11 @@
-using Microsoft.EntityFrameworkCore;
-using RealTimeChat.Application.Services.Abstract;
-using RealTimeChat.Application.Services.Concrete;
-using RealTimeChat.Infrastructure.Context;
-using RealTimeChat.Infrastructure.Repositories.Abstract;
-using RealTimeChat.Infrastructure.Repositories.Concrete;
+using RealTimeChat.Application.DependencyInjection;
+using RealTimeChat.Infrastructure.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// InMemory DbContext (þimdilik, ileride SqlServer yapacaðýz)
-builder.Services.AddDbContext<RealTimeChatDbContext>(options =>
-    options.UseInMemoryDatabase("ChatDb"));
-
-// Servisler ve Repositories
-builder.Services.AddScoped<IUserService, UserManager>();
-builder.Services.AddScoped<IMessageService, MessageManager>();
-builder.Services.AddScoped<IUserRepository, EfUserRepository>();
-builder.Services.AddScoped<IMessageRepository, EfMessageRepository>();
+// Servis kayýtlarý (katmanlara daðýlmýþ þekilde)
+builder.Services.AddApplication(); // Application katmanýndan
+builder.Services.AddInfrastructure(builder.Configuration); // Infrastructure katmanýndan
 
 // Controller ve Swagger
 builder.Services.AddControllers();

@@ -1,14 +1,14 @@
-﻿using Microsoft.EntityFrameworkCore;  
-using RealTimeChat.Domain.Entities;   
-using RealTimeChat.Infrastructure.Context;  
-using RealTimeChat.Infrastructure.Repositories.Abstract;  
+﻿using Microsoft.EntityFrameworkCore;
+using RealTimeChat.Domain.Entities;
+using RealTimeChat.Domain.Repositories;
+using RealTimeChat.Infrastructure.Context;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RealTimeChat.Infrastructure.Repositories.Concrete
+namespace RealTimeChat.Infrastructure.Repositories
 {
     // Entity Framework kullanarak kullanıcı verilerini yöneten somut (concrete) repository sınıfı
     public class EfUserRepository : IUserRepository

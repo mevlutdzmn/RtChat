@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RealTimeChat.Infrastructure.Repositories.Abstract
+namespace RealTimeChat.Domain.Repositories
 {
     // Kullanıcıya ait temel veri erişim işlemleri
     public interface IUserRepository
