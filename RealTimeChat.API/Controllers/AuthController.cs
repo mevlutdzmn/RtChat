@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
-using RealTimeChat.Application.DTOs.Auth; // DTO'ları buradan alıyoruz
+using RealTimeChat.Application.DTOs.Auth;
 using RealTimeChat.Application.Services.Abstract;
 using RealTimeChat.Domain.Entities;
 using RealTimeChat.Domain.Repositories;
@@ -8,20 +8,20 @@ using System.Threading.Tasks;
 
 namespace RealTimeChat.API.Controllers
 {
-    [ApiController] // Bu sınıfın bir Web API Controller olduğunu belirtir
-    [Route("api/[controller]")] // İsteklerin "api/auth" şeklinde yönlendirilmesini sağlar
+    [ApiController]
+    [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
-        private readonly IUserRepository _userRepository; // Kullanıcı verilerini çekeceğimiz repository
-        private readonly ITokenService _tokenService;     // Token üretmek için kullanılan servis
+        private readonly IUserRepository _userRepository;
+        private readonly ITokenService _tokenService;
 
-        // Constructor'da bağımlılıkları enjekte ediyoruz
         public AuthController(IUserRepository userRepository, ITokenService tokenService)
         {
             _userRepository = userRepository;
             _tokenService = tokenService;
         }
 
+        // Kullanıcı girişi işlemi
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
@@ -30,7 +30,7 @@ namespace RealTimeChat.API.Controllers
             if (user == null)
                 return Unauthorized("Kullanıcı bulunamadı.");
 
-            if (user.PasswordHash != request.Password)
+            if (user.PasswordHash != request.Password) // ❗ Şifre hash kontrolü yapılmalı, bu sadece demo
                 return Unauthorized("Şifre yanlış.");
 
             var token = _tokenService.GenerateToken(user);
@@ -38,31 +38,27 @@ namespace RealTimeChat.API.Controllers
             return Ok(new { Token = token });
         }
 
-        // Register Endpoint'i
+        // Yeni kullanıcı kaydı
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto request)
         {
-            // Email zaten var mı kontrol et
             var existingUser = await _userRepository.GetByEmailAsync(request.Email);
             if (existingUser != null)
                 return BadRequest("Bu email zaten kayıtlı.");
 
-            // Yeni kullanıcı oluştur
             var newUser = new User
             {
-                Username = request.Username,          // Username atandı
+                Username = request.Username,
                 Email = request.Email,
-                PasswordHash = request.Password,      // Şifreyi hashlemeyi unutma!
+                PasswordHash = request.Password, // ❗ Hashleme yok, güvenli değil
+                CreatedAt = DateTime.UtcNow
             };
 
-            // Kullanıcı ekle
             await _userRepository.AddAsync(newUser);
 
-            // Token üret
             var token = _tokenService.GenerateToken(newUser);
 
             return Ok(new { Token = token });
         }
-
     }
 }

@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using RealTimeChat.Application.DTOs;
 using RealTimeChat.Application.Services.Abstract;
 
 namespace RealTimeChat.WebAPI.Controllers
 {
+    [Authorize] // Tüm controller'ı yetkili kullanıcıya sınırlar
     [ApiController]
     [Route("api/[controller]")]
     public class UserController : ControllerBase
