@@ -1,7 +1,7 @@
 ﻿using RealTimeChat.Application.DTOs;
 using RealTimeChat.Application.Services.Abstract;
 using RealTimeChat.Domain.Entities;
-using RealTimeChat.Infrastructure.Repositories.Abstract;
+using RealTimeChat.Domain.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
