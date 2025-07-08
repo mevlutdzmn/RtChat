@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using RealTimeChat.Application.DTOs;
 using RealTimeChat.Application.Services.Abstract;
+using RealTimeChat.WebAPI.Hubs;
 
 namespace RealTimeChat.WebAPI.Controllers
 {
@@ -9,10 +11,13 @@ namespace RealTimeChat.WebAPI.Controllers
     public class MessageController : ControllerBase
     {
         private readonly IMessageService _messageService;
+        private readonly IHubContext<ChatHub> _hubContext;
 
-        public MessageController(IMessageService messageService)
+        // Tek constructor, iki dependency injection parametresi alıyor
+        public MessageController(IMessageService messageService, IHubContext<ChatHub> hubContext)
         {
             _messageService = messageService;
+            _hubContext = hubContext;
         }
 
         [HttpGet]
@@ -33,6 +38,10 @@ namespace RealTimeChat.WebAPI.Controllers
         public async Task<IActionResult> Send([FromBody] MessageDto messageDto)
         {
             var sent = await _messageService.SendMessageAsync(messageDto);
+
+            // Mesaj gönderildikten sonra SignalR ile anlık yayın yap
+            await _hubContext.Clients.All.SendAsync("ReceiveMessage", messageDto.SenderUsername, messageDto.Content);
+
             return Ok(sent);
         }
     }

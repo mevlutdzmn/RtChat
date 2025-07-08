@@ -21,6 +21,11 @@ namespace RealTimeChat.Infrastructure.Repositories
             _context = context;  // DbContext örneğini sınıf içinde sakla
         }
 
+        public async Task<User?> GetByEmailAsync(string email)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+        }
+
         // Tüm kullanıcıları veritabanından asenkron olarak liste halinde getirir
         public async Task<List<User>> GetAllAsync()
         {
