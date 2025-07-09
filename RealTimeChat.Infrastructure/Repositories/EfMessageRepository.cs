@@ -46,5 +46,6 @@ namespace RealTimeChat.Infrastructure.Repositories
             await _context.SaveChangesAsync();        // Değişiklikleri veritabanına kaydet
             return message;                           // Eklenen mesajı geri döndür
         }
+      
     }
 }

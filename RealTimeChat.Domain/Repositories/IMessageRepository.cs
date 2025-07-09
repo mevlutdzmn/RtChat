@@ -15,5 +15,6 @@ namespace RealTimeChat.Domain.Repositories
         Task<List<Message>> GetByUserIdAsync(Guid userId);
 
         Task<Message> AddAsync(Message message);
+        
     }
 }

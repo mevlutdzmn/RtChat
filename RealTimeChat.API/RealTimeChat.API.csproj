@@ -18,6 +18,12 @@
   </ItemGroup>
 
   <ItemGroup>
+  <Content Include="chat.html">
+    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+  </Content>
+</ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\RealTimeChat.Application\RealTimeChat.Application.csproj" />
     <ProjectReference Include="..\RealTimeChat.Infrastructure\RealTimeChat.Infrastructure.csproj" />
     <ProjectReference Include="..\RealTimeChat.Shared\RealTimeChat.Shared.csproj" />

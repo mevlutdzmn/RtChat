@@ -1,0 +1,79 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>SignalR Chat Test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+</head>
+<body>
+    <h2>Gerçek Zamanlı Chat (SignalR)</h2>
+
+    <input type="text" id="tokenInput" placeholder="JWT Token gir" style="width: 400px;" />
+    <br /><br />
+
+    <input type="text" id="messageInput" placeholder="Mesajınız" />
+    <button onclick="sendMessage()">Gönder</button>
+
+    <ul id="messagesList"></ul>
+
+    <script>
+        let connection;
+
+        async function connect() {
+            if (connection) {
+                try {
+                    await connection.stop();
+                    console.log("Önceki bağlantı durduruldu.");
+                } catch (e) {
+                    console.warn("Bağlantı durdurulurken hata:", e);
+                }
+            }
+
+            const token = document.getElementById("tokenInput").value.trim();
+
+            if (!token) {
+                console.warn("Token boş, bağlantı kurulmadı.");
+                return;
+            }
+
+            connection = new signalR.HubConnectionBuilder()
+                .withUrl("https://localhost:7018/chathub", {  // Backend adresini kendi projenin portuna göre güncelle
+                    accessTokenFactory: () => token
+                })
+                .configureLogging(signalR.LogLevel.Information)
+                .build();
+
+            connection.on("ReceiveMessage", (user, message) => {
+                const msg = document.createElement("li");
+                msg.textContent = `${user}: ${message}`;
+                document.getElementById("messagesList").appendChild(msg);
+            });
+
+            try {
+                await connection.start();
+                console.log("Bağlantı başarılı.");
+            } catch (err) {
+                console.error("Bağlantı kurulamadı:", err);
+            }
+        }
+
+        async function sendMessage() {
+            const message = document.getElementById("messageInput").value.trim();
+            if (!message) {
+                alert("Mesaj boş olamaz!");
+                return;
+            }
+            try {
+                await connection.invoke("SendMessage", message);
+                document.getElementById("messageInput").value = "";
+            } catch (err) {
+                console.error("Mesaj gönderilemedi:", err);
+            }
+        }
+
+        document.getElementById("tokenInput").addEventListener("change", () => {
+            connect();
+        });
+    </script>
+</body>
+</html>

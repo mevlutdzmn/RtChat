@@ -96,6 +96,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSignalR();
 
+
 // ------------------------------------------
 // 6. Pipeline ayarlarý
 // ------------------------------------------
