@@ -1,23 +1,41 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;    // JWT için gerekli namespace
+ï»¿using Microsoft.AspNetCore.Authentication.JwtBearer;    // JWT iÃ§in gerekli namespace
 using Microsoft.IdentityModel.Tokens;
-using RealTimeChat.Application.DependencyInjection;      // Application katmanýndaki DI uzantýsý
+using RealTimeChat.Application.DependencyInjection;      // Application katmanÄ±ndaki DI uzantÄ±sÄ±
 using RealTimeChat.Application.Services.Abstract;
 using RealTimeChat.Application.Services.Concrete;
-using RealTimeChat.Infrastructure.DependencyInjection;  // Infrastructure katmanýndaki DI uzantýsý
-using RealTimeChat.Shared.Settings;                     // JWT ayarlarýný almak için
-using RealTimeChat.WebAPI.Hubs;                         // SignalR için Hub sýnýfý
+using RealTimeChat.Infrastructure.DependencyInjection;  // Infrastructure katmanÄ±ndaki DI uzantÄ±sÄ±
+using RealTimeChat.Shared.Settings;                     // JWT ayarlarÄ±nÄ± almak iÃ§in
+using RealTimeChat.WebAPI.Hubs;                         // SignalR iÃ§in Hub sÄ±nÄ±fÄ±
 using System.Text;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // ------------------------------------------
-// 1. JWT Ayarlarýný yapýlandýr
+// 1. JWT AyarlarÄ±nÄ± yapÄ±landÄ±r
 // ------------------------------------------
 builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection("JwtSettings"));
 
 var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>();
+
+var allowedOrigins = new string[]
+{
+   
+    "http://127.0.0.1:5500"
+};
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("default", policy =>
+    {
+        policy.WithOrigins("https://localhost:3000") // frontend URL'si
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 
 // ------------------------------------------
 // 2. JWT Authentication
@@ -46,8 +64,8 @@ builder.Services.AddAuthentication(options =>
 // ------------------------------------------
 // 3. Katman servislerini ekle (IoC)
 // ------------------------------------------
-builder.Services.AddApplication();                      // Application katmaný baðýmlýlýklarý
-builder.Services.AddInfrastructure(builder.Configuration); // Infrastructure katmaný baðýmlýlýklarý
+builder.Services.AddApplication();                      // Application katmanÄ± baÄŸÄ±mlÄ±lÄ±klarÄ±
+builder.Services.AddInfrastructure(builder.Configuration); // Infrastructure katmanÄ± baÄŸÄ±mlÄ±lÄ±klarÄ±
 builder.Services.AddScoped<ITokenService, TokenManager>(); // Token servisi
 
 // ------------------------------------------
@@ -61,7 +79,7 @@ builder.Services.AddSwaggerGen(options =>
         Version = "v1"
     });
 
-    // JWT header tanýmý
+    // JWT header tanÄ±mÄ±
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -69,10 +87,10 @@ builder.Services.AddSwaggerGen(options =>
         Scheme = "Bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "JWT token'ý buraya 'Bearer <token>' formatýnda girin."
+        Description = "JWT token'Ä± buraya 'Bearer <token>' formatÄ±nda girin."
     });
 
-    // Swagger'da her endpoint için token gönderilmesini zorunlu kýlar
+    // Swagger'da her endpoint iÃ§in token gÃ¶nderilmesini zorunlu kÄ±lar
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -90,15 +108,16 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 // ------------------------------------------
-// 5. Diðer servisleri ekle
+// 5. DiÄŸer servisleri ekle
 // ------------------------------------------
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSignalR();
 
 
+
 // ------------------------------------------
-// 6. Pipeline ayarlarý
+// 6. Pipeline ayarlarÄ±
 // ------------------------------------------
 var app = builder.Build();
 
@@ -109,11 +128,14 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("default");
 
-app.UseAuthentication(); // JWT kimlik doðrulama
+app.UseAuthentication(); // JWT kimlik doÄŸrulama
 app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<ChatHub>("/chathub");
+
+
 
 app.Run();

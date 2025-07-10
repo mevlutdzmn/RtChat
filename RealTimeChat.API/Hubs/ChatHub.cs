@@ -29,5 +29,8 @@ namespace RealTimeChat.WebAPI.Hubs
             var username = Context.User?.FindFirst(ClaimTypes.Name)?.Value ?? "Anonim";
             await Clients.All.SendAsync("ReceiveMessage", username, message);
         }
+
+        // İstemcilerden mesaj al, herkese gönder
+       
     }
 }
