@@ -7,34 +7,70 @@
 </head>
 <body>
     <h2>SignalR Chat Testi</h2>
-    <input id="userInput" placeholder="Adınız" /><br><br>
+
+    <label>JWT Token (sadece token)</label><br />
+    <input id="tokenInput" placeholder="JWT tokenınızı buraya yapıştırın" style="width: 400px;" /><br><br>
+
     <input id="messageInput" placeholder="Mesajınız" />
     <button onclick="sendMessage()">Gönder</button>
 
     <ul id="messagesList"></ul>
 
     <script>
-        // Hub bağlantısı (Backend'de tanımladığın route: /chathub)
-        const connection = new signalR.HubConnectionBuilder()
-            .withUrl("https://localhost:7018/chathub") // Portunu kendi projenin portuna göre güncelle
-            .build();
+        let connection = null;
 
-        // Mesaj alındığında listede göster
-        connection.on("ReceiveMessage", (user, message) => {
-            const li = document.createElement("li");
-            li.textContent = `${user}: ${message}`;
-            document.getElementById("messagesList").appendChild(li);
-        });
+        function startConnection() {
+            const token = document.getElementById("tokenInput").value;
 
-        // Bağlantıyı başlat
-        connection.start().catch(err => console.error(err.toString()));
+            if (!token) {
+                alert("Lütfen JWT tokenınızı girin.");
+                return;
+            }
 
-        // Mesaj gönder
-        function sendMessage() {
-            const user = document.getElementById("userInput").value;
-            const message = document.getElementById("messageInput").value;
-            connection.invoke("SendMessage", user, message).catch(err => console.error(err.toString()));
+            // Tokenlı bağlantıyı başlat
+            connection = new signalR.HubConnectionBuilder()
+                .withUrl("https://localhost:7018/chathub", {
+                    accessTokenFactory: () => token
+                })
+                .build();
+
+            // Sunucudan gelen mesajı ekrana yaz
+            connection.on("ReceiveMessage", (user, message) => {
+                const li = document.createElement("li");
+                li.textContent = `${user}: ${message}`;
+                document.getElementById("messagesList").appendChild(li);
+            });
+
+            // Bağlantıyı başlat
+            connection.start()
+                .then(() => console.log("Bağlantı başarılı."))
+                .catch(err => console.error("SignalR bağlantı hatası:", err));
         }
+
+        function sendMessage() {
+            const message = document.getElementById("messageInput").value;
+
+            if (!connection || connection.state !== "Connected") {
+                alert("Bağlantı kurulamamış. Lütfen JWT token'ı yapıştırıp sayfayı yenileyin.");
+                return;
+            }
+
+            if (!message) {
+                alert("Lütfen bir mesaj yazın.");
+                return;
+            }
+
+            connection.invoke("SendMessage", message)
+                .catch(err => console.error("Mesaj gönderme hatası:", err));
+
+            // Mesaj kutusunu temizle
+            document.getElementById("messageInput").value = "";
+        }
+
+        // Sayfa yüklendiğinde token input değişirse bağlantıyı başlat
+        window.onload = () => {
+            document.getElementById("tokenInput").addEventListener("change", startConnection);
+        };
     </script>
 </body>
 </html>

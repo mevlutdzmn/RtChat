@@ -19,22 +19,19 @@ builder.Services.Configure<JwtSettings>(
 
 var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>();
 
-var allowedOrigins = new string[]
-{
-   
-    "http://127.0.0.1:5500"
-};
-
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("default", policy =>
+    options.AddPolicy("AllowChatFrontend", policy =>
     {
-        policy.WithOrigins("https://localhost:3000") // frontend URL'si
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
+        policy
+            .WithOrigins("http://127.0.0.1:8080", "http://localhost:8080")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials(); // ⚠️ SignalR için gerekli
     });
 });
+
+
 
 
 // ------------------------------------------
@@ -59,7 +56,25 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key))
     };
+
+    // ✅ SignalR için access_token'ı query'den çek
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+            var path = context.HttpContext.Request.Path;
+
+            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/chathub"))
+            {
+                context.Token = accessToken;
+            }
+
+            return Task.CompletedTask;
+        }
+    };
 });
+
 
 // ------------------------------------------
 // 3. Katman servislerini ekle (IoC)
@@ -128,7 +143,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseCors("default");
+app.UseCors("AllowChatFrontend"); // ✅ tanımladığın isimle birebir aynı olmalı
 
 app.UseAuthentication(); // JWT kimlik doğrulama
 app.UseAuthorization();
