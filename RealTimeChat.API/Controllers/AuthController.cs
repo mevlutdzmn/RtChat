@@ -1,11 +1,13 @@
-﻿using Microsoft.AspNetCore.Identity.Data;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
-using RealTimeChat.Application.DTOs.Auth;       // DTO'lar
-using RealTimeChat.Application.Security;       // IPasswordHasher
-using RealTimeChat.Application.Services.Abstract; // ITokenService
-using RealTimeChat.Domain.Entities;            // User entity
-using RealTimeChat.Domain.Repositories;        // IUserRepository
-using System;
+using Newtonsoft.Json.Linq;
+using RealTimeChat.Application.DTOs.Auth;
+using RealTimeChat.Application.Security;
+using RealTimeChat.Application.Services.Abstract;
+using RealTimeChat.Domain.Entities;
+using RealTimeChat.Domain.Repositories;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace RealTimeChat.API.Controllers
@@ -17,17 +19,23 @@ namespace RealTimeChat.API.Controllers
         private readonly IUserRepository _userRepository;
         private readonly ITokenService _tokenService;
         private readonly IPasswordHasher _passwordHasher;
+        private readonly IRefreshTokenRepository _refreshTokenRepository;
 
         public AuthController(
             IUserRepository userRepository,
             ITokenService tokenService,
-            IPasswordHasher passwordHasher)
+            IPasswordHasher passwordHasher,
+            IRefreshTokenRepository refreshTokenRepository)
         {
             _userRepository = userRepository;
             _tokenService = tokenService;
             _passwordHasher = passwordHasher;
+            _refreshTokenRepository = refreshTokenRepository;
         }
 
+        /// <summary>
+        /// Kullanıcı girişi
+        /// </summary>
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
@@ -39,10 +47,20 @@ namespace RealTimeChat.API.Controllers
                 return Unauthorized("Şifre yanlış.");
 
             var token = _tokenService.GenerateToken(user);
+            var refreshToken = _tokenService.GenerateRefreshToken(user);
+            await _refreshTokenRepository.AddAsync(refreshToken);
 
-            return Ok(new { Token = token });
+            return Ok(new
+            {
+                AccessToken = token,
+                RefreshToken = refreshToken.Token
+            });
         }
 
+
+        /// <summary>
+        /// Yeni kullanıcı kaydı
+        /// </summary>
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto request)
         {
@@ -55,14 +73,50 @@ namespace RealTimeChat.API.Controllers
                 Username = request.Username,
                 Email = request.Email,
                 CreatedAt = DateTime.UtcNow,
-                PasswordHash = _passwordHasher.HashPassword(request.Password)  // Burada hashleme yapılıyor
+                PasswordHash = _passwordHasher.HashPassword(request.Password)
             };
 
             await _userRepository.AddAsync(newUser);
 
             var token = _tokenService.GenerateToken(newUser);
+            var refreshToken = _tokenService.GenerateRefreshToken(newUser);
+            await _refreshTokenRepository.AddAsync(refreshToken);
 
-            return Ok(new { Token = token });
+            return Ok(new
+            {
+                AccessToken = token,
+                RefreshToken = refreshToken.Token
+            });
         }
+
+
+        /// <summary>
+        /// Giriş yapan kullanıcının bilgilerini döner
+        /// </summary>
+        [Authorize]
+        [HttpGet("me")]
+        public async Task<IActionResult> GetCurrentUser()
+        {
+            var email = User.FindFirst(ClaimTypes.Email)?.Value;
+
+            if (string.IsNullOrEmpty(email))
+                return Unauthorized("Token geçersiz.");
+
+            var user = await _userRepository.GetByEmailAsync(email);
+            if (user == null)
+                return NotFound("Kullanıcı bulunamadı.");
+
+            return Ok(new
+            {
+                user.Id,
+                user.Username,
+                user.Email,
+                user.CreatedAt
+            });
+        }
+
+
+
+
     }
 }

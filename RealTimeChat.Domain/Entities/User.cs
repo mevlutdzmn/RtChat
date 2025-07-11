@@ -21,5 +21,6 @@ namespace RealTimeChat.Domain.Entities
         public bool IsOnline { get; set; } = false; // Kullanıcı çevrimiçi mi?
 
         public ICollection<Message>? Messages { get; set; } // Kullanıcının gönderdiği mesajlar
+        public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
     }
 }

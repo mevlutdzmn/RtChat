@@ -48,5 +48,17 @@ namespace RealTimeChat.Application.Services.Concrete
             // Token'ı string olarak döndür
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
+        public RefreshToken GenerateRefreshToken(User user)
+        {
+            var refreshToken = new RefreshToken
+            {
+                Token = Guid.NewGuid().ToString(),
+                ExpiresAt = DateTime.UtcNow.AddDays(7),
+                UserId = user.Id
+            };
+            return refreshToken;
+        }
+
     }
 }

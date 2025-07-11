@@ -2,6 +2,7 @@
 using RealTimeChat.Application.Security;
 using RealTimeChat.Application.Services.Abstract;
 using RealTimeChat.Application.Services.Concrete;
+using RealTimeChat.Domain.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +18,9 @@ namespace RealTimeChat.Application.DependencyInjection
             services.AddScoped<IUserService, UserManager>();
             services.AddScoped<IMessageService, MessageManager>();
             services.AddScoped<ITokenService, TokenManager>();
-            services.AddScoped<IPasswordHasher, PasswordHasher>(); 
+            services.AddScoped<IPasswordHasher, PasswordHasher>();
+            services.AddScoped<IRefreshTokenRepository, EfRefreshTokenRepository>();
+
 
             return services;
         }

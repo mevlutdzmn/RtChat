@@ -10,5 +10,6 @@ namespace RealTimeChat.Application.Services.Abstract
     public interface ITokenService
     {
         string GenerateToken(User user);
+        RefreshToken GenerateRefreshToken(User user);
     }
 }
