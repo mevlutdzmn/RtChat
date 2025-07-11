@@ -1,13 +1,17 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;    // JWT için gerekli namespace
+using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using RealTimeChat.Application.DependencyInjection;      // Application katmanındaki DI uzantısı
+using RealTimeChat.Application.Security;
 using RealTimeChat.Application.Services.Abstract;
 using RealTimeChat.Application.Services.Concrete;
+using RealTimeChat.Domain.Entities;
 using RealTimeChat.Infrastructure.DependencyInjection;  // Infrastructure katmanındaki DI uzantısı
 using RealTimeChat.Shared.Settings;                     // JWT ayarlarını almak için
 using RealTimeChat.WebAPI.Hubs;                         // SignalR için Hub sınıfı
 using System.Text;
-using Microsoft.OpenApi.Models;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -82,6 +86,9 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddApplication();                      // Application katmanı bağımlılıkları
 builder.Services.AddInfrastructure(builder.Configuration); // Infrastructure katmanı bağımlılıkları
 builder.Services.AddScoped<ITokenService, TokenManager>(); // Token servisi
+builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
+
+
 
 // ------------------------------------------
 // 4. Swagger + JWT destekli
