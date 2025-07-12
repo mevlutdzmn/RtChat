@@ -22,5 +22,12 @@ namespace RealTimeChat.Domain.Entities
 
         public ICollection<Message>? Messages { get; set; } // Kullanıcının gönderdiği mesajlar
         public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
+
+
+        // email doğrulama 
+        public bool EmailConfirmed { get; set; } = false;
+        public string? EmailVerificationToken { get; set; }
+        public DateTime? EmailVerificationTokenExpires { get; set; }
+
     }
 }

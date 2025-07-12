@@ -16,5 +16,9 @@ namespace RealTimeChat.Domain.Repositories
         Task<User?> GetByIdAsync(Guid id);
 
         Task<User> AddAsync(User user);
+
+        Task<User?> GetByEmailVerificationTokenAsync(string token);
+        Task UpdateAsync(User user);
+
     }
 }

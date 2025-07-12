@@ -46,16 +46,20 @@ namespace RealTimeChat.API.Controllers
             if (!_passwordHasher.VerifyPassword(user.PasswordHash, request.Password))
                 return Unauthorized("Şifre yanlış.");
 
-            var token = _tokenService.GenerateToken(user);
+            if (!user.EmailConfirmed)
+                return Unauthorized("E-posta doğrulanmamış. Lütfen e-posta adresinizi doğrulayın.");
+
+            var accessToken = _tokenService.GenerateToken(user);
             var refreshToken = _tokenService.GenerateRefreshToken(user);
             await _refreshTokenRepository.AddAsync(refreshToken);
 
             return Ok(new
             {
-                AccessToken = token,
+                AccessToken = accessToken,
                 RefreshToken = refreshToken.Token
             });
         }
+
 
 
         /// <summary>
@@ -68,26 +72,36 @@ namespace RealTimeChat.API.Controllers
             if (existingUser != null)
                 return BadRequest("Bu email zaten kayıtlı.");
 
+            var emailToken = Guid.NewGuid().ToString();
+
             var newUser = new User
             {
                 Username = request.Username,
                 Email = request.Email,
                 CreatedAt = DateTime.UtcNow,
-                PasswordHash = _passwordHasher.HashPassword(request.Password)
+                PasswordHash = _passwordHasher.HashPassword(request.Password),
+                EmailVerificationToken = emailToken,
+                EmailVerificationTokenExpires = DateTime.UtcNow.AddHours(1),
+                EmailConfirmed = false
             };
 
             await _userRepository.AddAsync(newUser);
 
-            var token = _tokenService.GenerateToken(newUser);
+            var accessToken = _tokenService.GenerateToken(newUser);
             var refreshToken = _tokenService.GenerateRefreshToken(newUser);
             await _refreshTokenRepository.AddAsync(refreshToken);
 
+            // 👉 Email doğrulama linkini simüle edelim
+            Console.WriteLine($"✅ E-posta doğrulama linki: https://localhost:7018/api/auth/verify-email?token={emailToken}");
+
             return Ok(new
             {
-                AccessToken = token,
-                RefreshToken = refreshToken.Token
+                AccessToken = accessToken,
+                RefreshToken = refreshToken.Token,
+                Message = "Kayıt başarılı. Lütfen email adresinizi doğrulayın."
             });
         }
+
 
 
         /// <summary>
@@ -115,6 +129,51 @@ namespace RealTimeChat.API.Controllers
             });
         }
 
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> Refresh([FromBody] string refreshToken)
+        {
+            if (string.IsNullOrEmpty(refreshToken))
+                return BadRequest("Refresh token boş olamaz.");
+
+            var stored = await _refreshTokenRepository.GetByTokenAsync(refreshToken);
+            if (stored == null || stored.ExpiresAt < DateTime.UtcNow || stored.IsRevoked)
+                return Unauthorized("Geçersiz ya da süresi dolmuş token.");
+
+            // Yeni token’ları oluştur
+            var newAccessToken = _tokenService.GenerateToken(stored.User);
+            var newRefreshToken = _tokenService.GenerateRefreshToken(stored.User);
+
+            // Eski token’ı iptal et
+            await _refreshTokenRepository.RevokeAsync(refreshToken);
+
+            // Yeni refresh token’ı veritabanına kaydet
+            await _refreshTokenRepository.AddAsync(newRefreshToken);
+
+            return Ok(new
+            {
+                AccessToken = newAccessToken,
+                RefreshToken = newRefreshToken.Token
+            });
+        }
+
+
+        //Doğrulama endpointi
+        [HttpGet("verify-email")]
+        public async Task<IActionResult> VerifyEmail([FromQuery] string token)
+        {
+            var user = await _userRepository.GetByEmailVerificationTokenAsync(token);
+
+            if (user == null || user.EmailVerificationTokenExpires < DateTime.UtcNow)
+                return BadRequest("Geçersiz ya da süresi dolmuş token.");
+
+            user.EmailConfirmed = true;
+            user.EmailVerificationToken = null;
+            user.EmailVerificationTokenExpires = null;
+
+            await _userRepository.UpdateAsync(user);
+
+            return Ok("✅ Email başarıyla doğrulandı.");
+        }
 
 
 

@@ -49,5 +49,17 @@ namespace RealTimeChat.Infrastructure.Repositories
             await _context.SaveChangesAsync(); // Değişiklikleri veritabanına kaydet (asenkron)
             return user; // Eklenen kullanıcıyı geri döndür
         }
+        //***************burası güncellenecek 
+        public async Task<User?> GetByEmailVerificationTokenAsync(string token)
+        {
+            return await _context.Users
+                .FirstOrDefaultAsync(u => u.EmailVerificationToken == token);
+        }
+
+        public async Task UpdateAsync(User user)
+        {
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+        }
     }
 }
