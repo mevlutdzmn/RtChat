@@ -20,5 +20,8 @@ namespace RealTimeChat.Domain.Repositories
         Task<User?> GetByEmailVerificationTokenAsync(string token);
         Task UpdateAsync(User user);
 
+        Task<User?> GetByPasswordResetTokenAsync(string token);
+
+
     }
 }

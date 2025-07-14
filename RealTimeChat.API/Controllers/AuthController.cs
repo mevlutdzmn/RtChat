@@ -167,7 +167,7 @@ namespace RealTimeChat.API.Controllers
             return Ok("✅ Email başarıyla doğrulandı.");
         }
 
-        // ✅ 5. parola yenileme
+        // ✅ 5. parolamı unuttum
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto request)
         {
@@ -189,6 +189,25 @@ namespace RealTimeChat.API.Controllers
 
             return Ok("Şifre sıfırlama maili gönderildi.");
         }
+
+        //reset password
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+        {
+            var user = await _userRepository.GetByPasswordResetTokenAsync(dto.Token);
+
+            if (user == null || user.PasswordResetTokenExpires < DateTime.UtcNow)
+                return BadRequest("Geçersiz ya da süresi dolmuş token.");
+
+            user.PasswordHash = _passwordHasher.HashPassword(dto.NewPassword);
+            user.PasswordResetToken = null;
+            user.PasswordResetTokenExpires = null;
+
+            await _userRepository.UpdateAsync(user);
+
+            return Ok("✅ Şifreniz başarıyla güncellendi.");
+        }
+
 
 
     }
