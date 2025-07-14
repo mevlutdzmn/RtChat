@@ -46,5 +46,14 @@ namespace RealTimeChat.WebAPI.Controllers
 
             return Ok(sent);
         }
+
+
+        [HttpGet("history")]
+        public async Task<IActionResult> GetChatHistory([FromQuery] Guid userId1, [FromQuery] Guid userId2)
+        {
+            var messages = await _messageService.GetMessagesBetweenUsersAsync(userId1, userId2);
+            return Ok(messages);
+        }
+
     }
 }

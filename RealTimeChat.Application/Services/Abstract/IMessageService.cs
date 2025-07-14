@@ -1,4 +1,6 @@
 ﻿using RealTimeChat.Application.DTOs;
+using RealTimeChat.Application.DTOs.Message;
+using RealTimeChat.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,5 +20,10 @@ namespace RealTimeChat.Application.Services.Abstract
 
         // Yeni mesaj gönder
         Task<MessageDto> SendMessageAsync(MessageDto messageDto);
+
+        Task SaveMessageAsync(SaveMessageDto dto);
+
+        Task<List<Message>> GetMessagesBetweenUsersAsync(Guid userId1, Guid userId2);
+
     }
 }

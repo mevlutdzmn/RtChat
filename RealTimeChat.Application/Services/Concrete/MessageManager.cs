@@ -1,4 +1,5 @@
 ﻿using RealTimeChat.Application.DTOs;
+using RealTimeChat.Application.DTOs.Message;
 using RealTimeChat.Application.Services.Abstract;
 using RealTimeChat.Domain.Entities;
 using RealTimeChat.Domain.Repositories;
@@ -90,6 +91,28 @@ namespace RealTimeChat.Application.Services.Concrete
                 SenderUsername = added.Sender?.Username ?? "Bilinmiyor"
             };
         }
+
+
+        public async Task SaveMessageAsync(SaveMessageDto dto)
+        {
+            var message = new Message
+            {
+                Id = Guid.NewGuid(),
+                SenderId = dto.SenderId,
+                ReceiverId = dto.ReceiverId,
+                Content = dto.Content,
+                SentAt = DateTime.UtcNow
+            };
+
+            await _messageRepository.AddAsync(message);
+        }
+
+        public async Task<List<Message>> GetMessagesBetweenUsersAsync(Guid userId1, Guid userId2)
+        {
+            return await _messageRepository.GetMessagesBetweenUsersAsync(userId1, userId2);
+        }
+
+
     }
 
 }

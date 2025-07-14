@@ -46,6 +46,19 @@ namespace RealTimeChat.Infrastructure.Repositories
             await _context.SaveChangesAsync();        // Değişiklikleri veritabanına kaydet
             return message;                           // Eklenen mesajı geri döndür
         }
-      
+
+        public async Task<List<Message>> GetMessagesBetweenUsersAsync(Guid userId1, Guid userId2)
+        {
+            return await _context.Messages
+                .Where(m =>
+                    (m.SenderId == userId1 && m.ReceiverId == userId2) ||
+                    (m.SenderId == userId2 && m.ReceiverId == userId1))
+                .OrderBy(m => m.SentAt)
+                .ToListAsync();
+        }
+
+
+
+
     }
 }

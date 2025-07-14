@@ -1,4 +1,5 @@
 ﻿using RealTimeChat.Domain.Entities;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +16,11 @@ namespace RealTimeChat.Domain.Repositories
         Task<List<Message>> GetByUserIdAsync(Guid userId);
 
         Task<Message> AddAsync(Message message);
+
+        Task<List<Message>> GetMessagesBetweenUsersAsync(Guid userId1, Guid userId2);
+
         
+
+
     }
 }
