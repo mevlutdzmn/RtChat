@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RealTimeChat.Infrastructure.Context;
 
@@ -11,9 +12,11 @@ using RealTimeChat.Infrastructure.Context;
 namespace RealTimeChat.Infrastructure.Migrations
 {
     [DbContext(typeof(RealTimeChatDbContext))]
-    partial class RealTimeChatDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250714125657_UpdateMessageEntity_AddReceiverAndRoom")]
+    partial class UpdateMessageEntity_AddReceiverAndRoom
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -32,12 +35,6 @@ namespace RealTimeChat.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("ReceiverId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("RoomName")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<Guid>("SenderId")
                         .HasColumnType("uniqueidentifier");
 
@@ -45,8 +42,6 @@ namespace RealTimeChat.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ReceiverId");
 
                     b.HasIndex("SenderId");
 
@@ -127,17 +122,11 @@ namespace RealTimeChat.Infrastructure.Migrations
 
             modelBuilder.Entity("RealTimeChat.Domain.Entities.Message", b =>
                 {
-                    b.HasOne("RealTimeChat.Domain.Entities.User", "Receiver")
-                        .WithMany()
-                        .HasForeignKey("ReceiverId");
-
                     b.HasOne("RealTimeChat.Domain.Entities.User", "Sender")
                         .WithMany("Messages")
                         .HasForeignKey("SenderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Receiver");
 
                     b.Navigation("Sender");
                 });
