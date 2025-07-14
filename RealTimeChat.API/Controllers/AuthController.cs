@@ -166,5 +166,30 @@ namespace RealTimeChat.API.Controllers
 
             return Ok("✅ Email başarıyla doğrulandı.");
         }
+
+        // ✅ 5. parola yenileme
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto request)
+        {
+            var user = await _userRepository.GetByEmailAsync(request.Email);
+
+            if (user == null)
+            {
+                return BadRequest("Bu e-posta adresi kayıtlı değildir.");
+            }
+
+            var resetToken = Guid.NewGuid().ToString();
+            user.PasswordResetToken = resetToken;
+            user.PasswordResetTokenExpires = DateTime.UtcNow.AddHours(1);
+
+            await _userRepository.UpdateAsync(user);
+
+            var resetLink = $"https://localhost:7018/reset-password?token={resetToken}";
+            await _mailHelper.SendEmailAsync(user.Email, "Şifre Sıfırlama", $"Şifre sıfırlamak için tıklayın: <a href='{resetLink}'>Şifreyi Sıfırla</a>");
+
+            return Ok("Şifre sıfırlama maili gönderildi.");
+        }
+
+
     }
 }

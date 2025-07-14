@@ -29,5 +29,10 @@ namespace RealTimeChat.Domain.Entities
         public string? EmailVerificationToken { get; set; }
         public DateTime? EmailVerificationTokenExpires { get; set; }
 
+
+        // password reset
+        public string? PasswordResetToken { get; set; }
+        public DateTime? PasswordResetTokenExpires { get; set; }
+
     }
 }
