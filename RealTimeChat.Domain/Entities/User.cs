@@ -34,5 +34,8 @@ namespace RealTimeChat.Domain.Entities
         public string? PasswordResetToken { get; set; }
         public DateTime? PasswordResetTokenExpires { get; set; }
 
+        public ICollection<UserRoom> UserRooms { get; set; } = new List<UserRoom>();
+
+
     }
 }

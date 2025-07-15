@@ -23,5 +23,9 @@ namespace RealTimeChat.Domain.Entities
 
         public string? RoomName { get; set; }  // kanal mesajı için
 
+        public Guid? RoomId { get; set; }
+        public Room? Room { get; set; }
+
+
     }
 }
