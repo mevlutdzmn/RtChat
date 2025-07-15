@@ -7,8 +7,10 @@ using RealTimeChat.Application.Security;
 using RealTimeChat.Application.Services.Abstract;
 using RealTimeChat.Application.Services.Concrete;
 using RealTimeChat.Domain.Entities;
+using RealTimeChat.Domain.Repositories;
 using RealTimeChat.Infrastructure.DependencyInjection;  // Infrastructure katmanındaki DI uzantısı
 using RealTimeChat.Infrastructure.Email;
+using RealTimeChat.Infrastructure.Repositories;
 using RealTimeChat.Shared.Settings;                     // JWT ayarlarını almak için
 using RealTimeChat.WebAPI.Hubs;                         // SignalR için Hub sınıfı
 using System.Text;
@@ -89,6 +91,9 @@ builder.Services.AddInfrastructure(builder.Configuration); // Infrastructure kat
 builder.Services.AddScoped<ITokenService, TokenManager>(); // Token servisi
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<MailHelper>();
+builder.Services.AddScoped<IRoomService, RoomManager>();
+builder.Services.AddScoped<IRoomRepository, EFRoomRepository>();
+
 
 
 
